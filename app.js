@@ -1,3 +1,31 @@
+// Lógica do reconhecimento de voz
+const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+const SpeechGrammarList = window.SpeechGrammarList || window.webkitSpeechGrammarList;
+const SpeechRecognitionEvent = window.SpeechRecognitionEvent || window.webkitSpeechRecognitionEvent;
+const numeros = ["um","dois","três","quatro","cinco","seis","sete","oito","nove","dez","onze","doze","treze","catorze","quinze","dezesseis","dezessete","dezoito","dezenove","vinte","vinte e um","vinte e dois","vinte e três"];
+const gramatica = `#JSGF V1.0; grammar numeros; public <numero> = ${numeros.join(" | ")}`;
+const recognition = SpeechRecognition();
+const speechRecognitionList = SpeechGrammarList();
+speechRecognitionList.addFromString(grammar, 1);
+recognition.grammars = speechRecognitionList;
+recognition.continuous = false;
+recognition.lang = "pt-BR";
+recognition.interimResults = false;
+recognition.maxAlternatives = 1;
+
+document.body.onclick = () => {
+    recognition.start();
+    console.log("Pronto pra ouvir");
+};
+
+recognition.onresult = (e) => {
+    const numero = e.results[0][0].transcript;
+    diagnostic.textContent = `Numero recebido: ${numero}.`;
+    inputChute.value = numero;
+    console.log(`Confidence: ${e.results[0][0].confidence}`);
+    verificarChute();
+};
+
 // Constantes do jogo
 const maxNum = 23;
 
@@ -71,7 +99,7 @@ function resetGame(){
     botaoReset.disabled = true;
 }
 
-// Função que irão executar após a página carregar
+// Função que irá executar após a página carregar
 onload = function(){
     inputChute.min = 1;
     inputChute.max = maxNum;
