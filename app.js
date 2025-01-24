@@ -1,31 +1,3 @@
-// Lógica do reconhecimento de voz
-const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-const SpeechGrammarList = window.SpeechGrammarList || window.webkitSpeechGrammarList;
-const SpeechRecognitionEvent = window.SpeechRecognitionEvent || window.webkitSpeechRecognitionEvent;
-const numeros = ["um","dois","três","quatro","cinco","seis","sete","oito","nove","dez","onze","doze","treze","catorze","quinze","dezesseis","dezessete","dezoito","dezenove","vinte","vinte e um","vinte e dois","vinte e três"];
-const gramatica = `#JSGF V1.0; grammar numeros; public <numero> = ${numeros.join(" | ")}`;
-const recognition = SpeechRecognition();
-const speechRecognitionList = SpeechGrammarList();
-speechRecognitionList.addFromString(grammar, 1);
-recognition.grammars = speechRecognitionList;
-recognition.continuous = false;
-recognition.lang = "pt-BR";
-recognition.interimResults = false;
-recognition.maxAlternatives = 1;
-
-document.body.onclick = () => {
-    recognition.start();
-    console.log("Pronto pra ouvir");
-};
-
-recognition.onresult = (e) => {
-    const numero = e.results[0][0].transcript;
-    diagnostic.textContent = `Numero recebido: ${numero}.`;
-    inputChute.value = numero;
-    console.log(`Confidence: ${e.results[0][0].confidence}`);
-    verificarChute();
-};
-
 // Constantes do jogo
 const maxNum = 23;
 
@@ -42,6 +14,17 @@ let comparativo;
 let numerosTentados = [];
 let mensagem = `Adivinhe um número entre 1 e ${maxNum}`;
 
+// Lógica para sintese de voz
+function lerTexto(texto){
+    if (window.speechSynthesis) {
+        let utterance = new SpeechSynthesisUtterance(texto);
+        utterance.lang = 'pt-BR'; 
+        utterance.rate = 1.2; 
+        window.speechSynthesis.speak(utterance); 
+    } else {
+        console.log("Web Speech API não suportada neste navegador.");
+    }
+}
 
 function gerarMensagemErro(){
     let  mensagemErro = `Você errou, o número é ${comparativo}! Tente novamente. números tentados: ${numerosTentados}`;
@@ -77,12 +60,14 @@ function verificarChute(){
     if(chute == numeroSorteado && testeInput){
         tentativas++;
         descJogo.innerHTML = gerarMensagemAcerto();
+        lerTexto(descJogo.innerHTML);
         return;
     } else if(testeInput && chute >= 1 && chute <= maxNum){
         comparativo = chute > numeroSorteado ? "menor" : "maior";
         tentativas++;
         numerosTentados.push(chute);
         descJogo.innerHTML = gerarMensagemErro();
+        lerTexto(descJogo.innerHTML);
         return;
     }
     
@@ -104,5 +89,40 @@ onload = function(){
     inputChute.min = 1;
     inputChute.max = maxNum;
     descJogo.innerHTML = mensagem;
+    lerTexto(mensagem);
     sortearNumero();
 }
+
+/*
+// Lógica do reconhecimento de voz
+const numeros = ["um","dois","três","quatro","cinco","seis","sete","oito","nove","dez","onze","doze","treze","catorze","quinze","dezesseis","dezessete","dezoito","dezenove","vinte","vinte e um","vinte e dois","vinte e três"];
+const gramatica = `#JSGF V1.0; grammar numeros; public <numero> = ${numeros.join(" | ")}`;
+const numerosDigito = numeros.map((numero) => numeros.indexOf(numero) + 1); // Array com numeros em formato numérico : 1,2,3...
+let resultadoVozUsuario;
+if(!("webkitSpeechRecognition" in window)){
+    alert("Seu navegador não suporta a API de reconhecimento de voz!");
+} else {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const SpeechGrammarList = window.SpeechGrammarList || window.webkitSpeechGrammarList;
+    const SpeechRecognitionEvent = window.SpeechRecognitionEvent || window.webkitSpeechRecognitionEvent;
+    const recognition = new SpeechRecognition();
+    const speechRecognitionList = new SpeechGrammarList();
+    speechRecognitionList.addFromString(gramatica, 1);
+    recognition.grammars = speechRecognitionList;
+    recognition.continuous = false;
+    recognition.lang = "pt-BR";
+    recognition.interimResults = false;
+    recognition.maxAlternatives = 1;
+    
+    function falarNumero(){
+        recognition.start();
+    }
+
+    recognition.onresult = (e) => {
+        const numero = e.results[0][0].transcript;
+        diagnostic.textContent = `Numero recebido: ${numero}.`;
+        console.log(`Confidence: ${e.results[0][0].confidence}`);
+        alert(numero);
+    };
+}
+*/
